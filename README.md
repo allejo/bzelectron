@@ -25,7 +25,7 @@ EVERYONE
 **public.pgrp**
 
 ```
-$prefix "ALLEJO"
+$prefix = "ALLEJO"
 
 @include partials/everyone.pgrp
 
