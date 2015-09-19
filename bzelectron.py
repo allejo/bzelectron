@@ -97,7 +97,11 @@ def handle_permission(group, perm):
         groups[group].append(perm)
 
 def parse(filepath):
-    filecontents = loadfile(filepath)
+    abspath = os.path.abspath(filepath)
+    fullpath = os.path.dirname(abspath)
+    filename = os.path.basename(abspath)
+
+    filecontents = loadfile(os.path.join(fullpath, filename))
     line_counter = 0
     last_group = ""
 
@@ -141,7 +145,11 @@ def parse(filepath):
             else:
                 params = None
 
-            params.insert(0, last_group)
+            # Index 0 is going to have useful variables that is passed to language functions
+            params.insert(0, {
+                'last_group': last_group,
+                'full_path': fullpath
+            })
 
             try:
                 functions[func_call](params)
@@ -155,7 +163,7 @@ def parse(filepath):
 
 # Language functions
 def func_include(file_path):
-    file_path = file_path[1]
+    file_path = os.path.join(file_path[0]['full_path'], file_path[1])
 
     if os.path.isfile(file_path):
         parse(file_path)
@@ -165,7 +173,7 @@ def func_include(file_path):
 def func_extend(params):
     global groups
 
-    target_group = params[0]
+    target_group = params[0]['last_group']
     extend_group = params[1]
 
     for perm in groups[extend_group]:
