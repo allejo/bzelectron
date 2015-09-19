@@ -1,0 +1,6 @@
+@include public.pgrp
+
+# Public FMs are allowed, so let everyone /countdown but still keep
+# the same permissions as my public servers
+EVERYONE
+    +COUNTDOWN

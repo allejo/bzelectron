@@ -1,0 +1,16 @@
+$prefix = "ALLEJO"
+
+@include partials/everyone.pgrp
+
+VERIFIED
+    @extend EVERYONE
+
+    +REPORT
+
+$prefix.COP
+    +KICK
+
+$prefix.ADMIN
+    @extend $prefix.COP
+
+    +BAN
