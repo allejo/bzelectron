@@ -87,7 +87,7 @@ class BZElectronParser(object):
             with open(_path) as f:
                 return f.read().splitlines()
         except IOError:
-            print "bzgrpc: " + _path + ": No such file"
+            print "bzelectron: " + _path + ": No such file"
             sys.exit(2)
 
     def _evaluate_variables(self, _line):
@@ -187,12 +187,12 @@ if __name__ == '__main__':
     try:
         opts, args = getopt.getopt(sys.argv[1:], "hvi:o:", ["input=", "output="])
     except getopt.GetoptError:
-        print 'bzgdbc.py -i <inputfile> -o <outputfile>'
+        print 'bzelectron.py -i <inputfile> -o <outputfile>'
         sys.exit(2)
 
     for opt, arg in opts:
         if opt == '-h':
-            print 'bzgdbc.py -i <inputfile> -o <outputfile>'
+            print 'bzelectron.py -i <inputfile> -o <outputfile>'
             sys.exit()
         elif opt in ("-v", "--version"):
             print 'bzelectron {}.{}.{}'.format(MAJOR, MINOR, REV)
