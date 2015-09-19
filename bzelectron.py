@@ -201,6 +201,11 @@ for opt, arg in opts:
     elif opt in ("-o", "--output"):
         outputfile = arg
 
+if not outputfile:
+    basename = os.path.basename(inputfile)
+    filename = os.path.splitext(basename)[0]
+    outputfile = '{}.groupdb'.format(filename)
+
 
 # Parse the initial file
 parse(inputfile)
