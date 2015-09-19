@@ -54,15 +54,17 @@ EVERYONE
     +COUNTDOWN
 ```
 
-### Using this
+## Usage
 
 Ok. You may have sold me on this, but how do I use it?
 
 ```
-python bzelectron.py -i public_match.pgrp -o public.groupdb
+python bzelectron.py -i public_match.pgrp
 ```
 
-The `-i` flag tells bzelectron which file to compile and the `-o` flag specifies the output file.
+The `-i` flag tells bzelectron which file to compile. There is an optional `-o` flag specifies the output file; if this is not set, then it will take the same file name and an append an ".groupdb" extension. **Warning:** Do not name your partial bzelectron files with a ".groupdb" extension as bzelectron uses that extension for compiled files.
+
+
 
 ## License
 
