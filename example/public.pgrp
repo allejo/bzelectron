@@ -1,5 +1,6 @@
 $prefix = "ALLEJO"
 
+@include partials/gu/admins.pgrp
 @include partials/everyone.pgrp
 
 VERIFIED

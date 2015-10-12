@@ -19,6 +19,7 @@ class BZElectron(object):
     def __init__(self):
         self.variables = {}
         self.groups = {}
+        self.imports = {}
 
     def get_variable(self, name):
         try:
@@ -29,13 +30,25 @@ class BZElectron(object):
     def set_variable(self, name, value):
         self.variables[name] = value
 
-    def create_group(self, group_name):
-        if not group_name in self.groups:
-            self.groups[group_name] = []
+    def create_group(self, group_name, include):
+        target_group = self.groups if include else self.imports
+
+        if group_name not in target_group:
+            target_group[group_name] = []
 
         return group_name
 
+    def handle_import(self, group, perm):
+        if group in self.groups:
+            pass
+
+        self._auto_permission(self.imports, group, perm)
+
     def handle_permission(self, group, perm):
+        self._auto_permission(self.groups, group, perm)
+
+    @staticmethod
+    def _auto_permission(group_or_import, group, perm):
         action = perm[:1]
         perm_name = perm[1:]
 
@@ -45,23 +58,23 @@ class BZElectron(object):
 
         if action == "+":
             try:
-                self.groups[group].remove(remove_perm)
+                group_or_import[group].remove(remove_perm)
             except ValueError:
                 pass
         elif action == "-":
             try:
-                self.groups[group].remove(add_perm)
+                group_or_import[group].remove(add_perm)
             except ValueError:
                 pass
         elif action == "!":
             try:
-                self.groups[group].remove(remove_perm)
-                self.groups[group].remove(add_perm)
+                group_or_import[group].remove(remove_perm)
+                group_or_import[group].remove(add_perm)
             except ValueError:
                 pass
 
-        if negate_perm not in self.groups[group] and perm not in self.groups[group]:
-            self.groups[group].append(perm)
+        if negate_perm not in group_or_import[group] and perm not in group_or_import[group]:
+            group_or_import[group].append(perm)
 
 
 class BZElectronParser(object):
@@ -77,6 +90,7 @@ class BZElectronParser(object):
     def __init__(self, _electron):
         self.electron = _electron
         self.functions = {
+            'import': self.func_import,
             'include': self.func_include,
             'extend': self.func_extend
         }
@@ -99,7 +113,7 @@ class BZElectronParser(object):
 
         return _line
 
-    def parse(self, _filepath):
+    def parse(self, _filepath, include_file):
         abspath = os.path.abspath(_filepath)
         fullpath = os.path.dirname(abspath)
         filename = os.path.basename(abspath)
@@ -132,13 +146,16 @@ class BZElectronParser(object):
                     sys.exit(2)
 
             if BZElectronParser.group_declaration.match(line):
-                last_group = self.electron.create_group(line)
+                last_group = self.electron.create_group(line, include_file)
                 continue
 
             line = line.strip()
 
             if line[:1] == "+" or line[:1] == "-" or line[:1] == "!":
-                self.electron.handle_permission(last_group, line)
+                if include_file:
+                    self.electron.handle_permission(last_group, line)
+                else:
+                    self.electron.handle_import(last_group, line)
             elif line[:1] == "@":
                 tokens = line.split(" ")
                 func_call = tokens[0][1:]
@@ -164,11 +181,19 @@ class BZElectronParser(object):
                     sys.exit(2)
 
     # Language functions
+    def func_import(self, params):
+        filepath = os.path.join(params[0]['full_path'], params[1])
+
+        if os.path.isfile(filepath):
+            self.parse(filepath, False)
+        else:
+            raise IncludeError("Imported file '{}' not found".format(filepath))
+
     def func_include(self, params):
         filepath = os.path.join(params[0]['full_path'], params[1])
 
         if os.path.isfile(filepath):
-            self.parse(filepath)
+            self.parse(filepath, True)
         else:
             raise IncludeError("Included file '{}' not found".format(filepath))
 
@@ -176,7 +201,12 @@ class BZElectronParser(object):
         target_group = params[0]['last_group']
         extend_group = params[1]
 
-        for perm in electron.groups[extend_group]:
+        try:
+            perm_location = electron.groups[extend_group]
+        except KeyError:
+            perm_location = electron.imports[extend_group]
+
+        for perm in perm_location:
             self.electron.handle_permission(target_group, perm)
 
 if __name__ == '__main__':
@@ -212,7 +242,7 @@ if __name__ == '__main__':
     electron = BZElectron()
     parser = BZElectronParser(electron)
 
-    parser.parse(inputfile)
+    parser.parse(inputfile, True)
 
     # Output the gathered information
     try:

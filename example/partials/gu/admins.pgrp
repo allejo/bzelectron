@@ -1,0 +1,6 @@
+@import cops.pgrp
+
+GU-LEAGUE.ADMINS
+    @extend GU-LEAGUE.COPS
+
+    +BAN
