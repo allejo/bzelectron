@@ -15,6 +15,11 @@ class IncludeError(Exception):
     pass
 
 
+class UndefinedGroup(Exception):
+    pass
+
+
+# BZElectron classes
 class BZElectron(object):
     def __init__(self):
         self.variables = {}
@@ -173,7 +178,7 @@ class BZElectronParser(object):
 
                 try:
                     self.functions[func_call](params)
-                except IncludeError, e:
+                except (IncludeError, UndefinedGroup), e:
                     print str(e), "on line", line_counter, "of file:", _filepath
                     sys.exit(2)
                 except KeyError:
@@ -201,10 +206,12 @@ class BZElectronParser(object):
         target_group = params[0]['last_group']
         extend_group = params[1]
 
-        try:
+        if extend_group in electron.groups:
             perm_location = electron.groups[extend_group]
-        except KeyError:
+        elif extend_group in electron.imports:
             perm_location = electron.imports[extend_group]
+        else:
+            raise UndefinedGroup("Group '{}' not previously defined".format(extend_group))
 
         for perm in perm_location:
             self.electron.handle_permission(target_group, perm)
