@@ -66,7 +66,7 @@ class BZElectron(object):
 
 class BZElectronParser(object):
     varname = "\$[a-zA-Z]+"
-    groupname = "[A-Z_\-\.]+"
+    groupname = "[A-Z0-9_\-\.]+"
     comment = "\s*?#.*"
 
     var_name = re.compile("(" + varname + ")")
