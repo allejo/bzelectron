@@ -90,7 +90,7 @@ class BZElectronParser(object):
     var_name = re.compile("(" + varname + ")")
     comment_line = re.compile(comment)
     var_instantiation = re.compile("(" + varname + ")\s?=\s?\"(.+)\"")
-    group_declaration = re.compile("(" + groupname + ")")
+    group_declaration = re.compile("(" + groupname + ")(?:\:(.*))?")
 
     def __init__(self, _electron):
         self.electron = _electron
@@ -117,6 +117,13 @@ class BZElectronParser(object):
             _line = _line.replace(var, value)
 
         return _line
+
+    def _parse_permissions(self, _permissions, _last_group, _include_file):
+        for permission in _permissions.split():
+            if _include_file:
+                self.electron.handle_permission(_last_group, permission)
+            else:
+                self.electron.handle_import(_last_group, permission)
 
     def parse(self, _filepath, include_file):
         abspath = os.path.abspath(_filepath)
@@ -150,17 +157,22 @@ class BZElectronParser(object):
                     print str(e), "on line", line_counter, "of file:", _filepath
                     sys.exit(2)
 
-            if BZElectronParser.group_declaration.match(line):
-                last_group = self.electron.create_group(line, include_file)
+            vardata = re.match(BZElectronParser.group_declaration, line)
+            if vardata:
+                group = vardata.group(1)
+                permissions = vardata.group(2)
+
+                last_group = self.electron.create_group(group, include_file)
+
+                if permissions is not None:
+                    self._parse_permissions(permissions, last_group, include_file)
+
                 continue
 
             line = line.strip()
 
             if line[:1] == "+" or line[:1] == "-" or line[:1] == "!":
-                if include_file:
-                    self.electron.handle_permission(last_group, line)
-                else:
-                    self.electron.handle_import(last_group, line)
+                self._parse_permissions(line, last_group, include_file)
             elif line[:1] == "@":
                 tokens = line.split(" ")
                 func_call = tokens[0][1:]
