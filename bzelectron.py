@@ -7,7 +7,7 @@ import sys
 
 MAJOR = 0
 MINOR = 1
-REV = 1
+REV = 2
 
 
 # Custom exceptions we'll be raising
