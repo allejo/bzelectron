@@ -280,4 +280,5 @@ if __name__ == '__main__':
 
     with open(outputfile, "a") as f:
         for group in electron.groups:
-            f.write('{}: {}\n'.format(group, ' '.join(electron.groups[group])))
+            if electron.groups[group]:
+                f.write('{}: {}\n'.format(group, ' '.join(electron.groups[group])))
