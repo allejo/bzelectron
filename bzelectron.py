@@ -77,6 +77,15 @@ class BZElectron(object):
                 group_or_import[group].remove(add_perm)
             except ValueError:
                 pass
+        elif action == "^":
+            try:
+                group_or_import[group].remove(add_perm)
+                group_or_import[group].remove(remove_perm)
+                group_or_import[group].remove(negate_perm)
+            except ValueError:
+                pass
+
+            return
 
         if negate_perm not in group_or_import[group] and perm not in group_or_import[group]:
             group_or_import[group].append(perm)
@@ -171,7 +180,7 @@ class BZElectronParser(object):
 
             line = line.strip()
 
-            if line[:1] == "+" or line[:1] == "-" or line[:1] == "!":
+            if line[:1] == "+" or line[:1] == "-" or line[:1] == "!" or line[:1] == "^":
                 self._parse_permissions(line, last_group, include_file)
             elif line[:1] == "@":
                 tokens = line.split(" ")
